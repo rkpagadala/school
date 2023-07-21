@@ -1,0 +1,36 @@
+class Fee:
+    def __init__(self, student_id, amount, due_date):
+        self.student_id = student_id
+        self.amount = amount
+        self.due_date = due_date
+
+    def __str__(self):
+        return f"Student ID: {self.student_id}, Amount: {self.amount}, Due Date: {self.due_date}"
+
+    def get_student_id(self):
+        return self.student_id
+
+    def get_amount(self):
+        return self.amount
+
+    def get_due_date(self):
+        return self.due_date
+
+    def set_amount(self, amount):
+        self.amount = amount
+
+    def set_due_date(self, due_date):
+        self.due_date = due_date
+
+
+# Example Usage:
+if __name__ == "__main__":
+    fee1 = Fee(student_id=12345, amount=1500, due_date="2023-08-01")
+    fee2 = Fee(student_id=67890, amount=1200, due_date="2023-08-10")
+
+    print(fee1)  # Output: Student ID: 12345, Amount: 1500, Due Date: 2023-08-01
+
+    fee2.set_amount(1400)
+    fee2.set_due_date("2023-08-15")
+
+    print(fee2)  # Output: Student ID: 67890, Amount: 1400, Due Date: 2023-08-15
