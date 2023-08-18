@@ -1,27 +1,32 @@
 # test_school_management.py
-import sqlite3
+
+from datetime import datetime
 import unittest
 import school_management
 
 class TestUpdateRecord(unittest.TestCase):
 
     def setUp(self):
-        # Set up the test database
-        school_management.create_database()  # Create the database before each test
-        school_management.connector = sqlite3.connect('school_db_test.db')
-        school_management.cursor = school_management.connector.cursor()
+        # Create the database and tables
+        Base.metadata.create_all(engine)
+        self.session = Session()
 
     def tearDown(self):
         # Clean up after the test
-        school_management.cursor.execute("DROP TABLE SCHOOL_MANAGEMENT")
-        school_management.connector.close()
-
+        self.session.close()
+        Base.metadata.drop_all(engine)
 
     def test_update_record(self):
-        # Insert a test record into the database
-        school_management.cursor.execute("INSERT INTO SCHOOL_MANAGEMENT (NAME, EMAIL, PHONE_NO, GENDER, DOB, STREAM) VALUES (?, ?, ?, ?, ?, ?)",
-                                         ('John Doe', 'john.doe@example.com', '1234567890', 'Male', '2000-01-01', 'Science'))
-        school_management.connector.commit()
+        student = Student(
+            name='John Doe',
+            email='john.doe@example.com',
+            phone_no='1234567890',
+            gender='Male',
+            dob=datetime.strptime('2000-01-01', '%Y-%m-%d').date(),  # Convert to Python date object
+            stream='Science'
+        )
+        self.session.add(student)
+        self.session.commit()
 
         # Call the update_record function
         updated_data = {
@@ -32,21 +37,20 @@ class TestUpdateRecord(unittest.TestCase):
             'dob': '2000-02-02',
             'stream': 'Arts'
         }
-        admission_no = 1  # Assuming the student with ID 1 was inserted in the previous step
-        school_management.update_record(admission_no, updated_data)
+        admission_no = student.admission_no
+        update_record(admission_no, updated_data)
 
         # Fetch the updated record from the database
-        school_management.cursor.execute(
-            "SELECT * FROM SCHOOL_MANAGEMENT WHERE STUDENT_ID=?", (admission_no,))
-        updated_record = school_management.cursor.fetchone()
+        updated_student = self.session.query(Student).get(admission_no)
 
-        # Assert the updated record values
-        self.assertEqual(updated_record[1], 'Jane Doe')
-        self.assertEqual(updated_record[2], 'jane.doe@example.com')
-        self.assertEqual(updated_record[3], '9876543210')
-        self.assertEqual(updated_record[4], 'Female')
-        self.assertEqual(updated_record[5], '2000-02-02')
-        self.assertEqual(updated_record[6], 'Arts')
+        # Create a comparison array of objects
+        expected_updated_student = Student(admission_no=admission_no, **updated_data)
 
+        self.assertTrue(updated_student.name == expected_updated_student.name and
+                        updated_student.email == expected_updated_student.email and
+                        updated_student.phone_no == expected_updated_student.phone_no and
+                        updated_student.gender == expected_updated_student.gender and
+                        updated_student.dob == expected_updated_student.dob and
+                        updated_student.stream == expected_updated_student.stream)
 if __name__ == '__main__':
     unittest.main()
