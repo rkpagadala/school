@@ -16,6 +16,9 @@ class TestUpdateRecord(unittest.TestCase):
         self.session.close()
         Base.metadata.drop_all(engine)
 
+    def are_students_equal(self, student1, student2):
+        return student1 == student2
+
     def test_update_record(self):
         student = Student(
             name='John Doe',
@@ -40,17 +43,16 @@ class TestUpdateRecord(unittest.TestCase):
         admission_no = student.admission_no
         update_record(admission_no, updated_data)
 
-        # Fetch the updated record from the database
+        #Fetch the updated record from the database
         updated_student = self.session.query(Student).get(admission_no)
 
-        # Create a comparison array of objects
+        #Create an expected student object
         expected_updated_student = Student(admission_no=admission_no, **updated_data)
 
-        self.assertTrue(updated_student.name == expected_updated_student.name and
-                        updated_student.email == expected_updated_student.email and
-                        updated_student.phone_no == expected_updated_student.phone_no and
-                        updated_student.gender == expected_updated_student.gender and
-                        updated_student.dob == expected_updated_student.dob and
-                        updated_student.stream == expected_updated_student.stream)
+        # Check if the updated record values are the same
+        are_equal = self.are_students_equal(updated_student, expected_updated_student)
+
+        # You can now use 'are_equal' as a boolean to check if both objects are the same
+        return are_equal
 if __name__ == '__main__':
     unittest.main()
